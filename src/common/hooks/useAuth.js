@@ -5,44 +5,39 @@ import { login, register } from "../auth-api";
 import { useNavigate } from "react-router-dom";
 
 function useAuth() {
-  const user = useSelector(({ user }) => user);
+  const userInfo = useSelector(({ user }) => user);
   const [authError, setAuthError] = useState("");
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [checkingAuth, setCheckingAuth] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  console.log(">>>", userInfo);
 
   const _navigateToRoot = useCallback(() => {
     navigate("/");
   }, [navigate]);
 
-  useEffect(() => {
-    console.log(user);
-    if (user?.sessionTimeout) {
-      console.log("LOGIN AGAIN YOU DUMMY");
-    }
-  }, [user.sessionTimeout]);
+  // useEffect(() => {
+  //   const localUserData = localStorage.getItem("user");
 
-  useEffect(() => {
-    const localUserData = localStorage.getItem("user");
+  //   if (userInfo && userInfo.id) {
+  //     localStorage.setItem("user", JSON.stringify(userInfo));
+  //     localStorage.setItem("token", `${userInfo.accessToken}`);
+  //     return;
+  //   }
 
-    if (user && user.id) {
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", `${user.accessToken}`);
-      return;
-    }
+  //   if (!userInfo && !localUserData) {
+  //     _navigateToRoot();
+  //   }
 
-    if (!user && !localUserData) {
-      _navigateToRoot();
-    }
+  //   if (localUserData) {
+  //     const userData = JSON.parse(localUserData);
+  //     dispatch(setUser(userData));
+  //   }
 
-    if (localUserData) {
-      const userData = JSON.parse(localUserData);
-      dispatch(setUser(userData));
-    }
-
-    setCheckingAuth(false);
-    setAuthError(false);
-  }, [user, _navigateToRoot, dispatch, navigate]);
+  //   setCheckingAuth(false);
+  //   setAuthError(false);
+  // }, [userInfo, _navigateToRoot, dispatch, navigate]);
 
   function logoutHandler() {
     localStorage.removeItem("user");
@@ -52,17 +47,23 @@ function useAuth() {
   }
 
   function loginHandler(credentials, navigateToAfterLogin) {
-    return login(credentials).then(({ success, data }) => {
-      if (success && data.id) {
-        localStorage.setItem("user", JSON.stringify(data));
-        setAuthError(false);
+    return login(credentials).then((res) => {
+      console.log("RESPONSE: ", res);
 
-        dispatch(setUser(data));
-        navigate(navigateToAfterLogin);
-      } else {
-        setAuthError(data);
-        setCheckingAuth(false);
-      }
+      // if (success && data) {
+      //   const { jwt, user } = data;
+      //   console.log(data);
+      //   console.log(jwt, user);
+      //   localStorage.setItem("user", JSON.stringify(user));
+      //   localStorage.setItem("token", jwt);
+
+      //   setAuthError(false);
+      //   dispatch(setUser(data));
+      //   navigate(navigateToAfterLogin);
+      // } else {
+      //   setAuthError(data);
+      //   setCheckingAuth(false);
+      // }
     });
   }
 
@@ -86,14 +87,23 @@ function useAuth() {
     });
   }
 
+  function isLoggedInHandler() {
+    if (userInfo.user) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   return {
-    user,
+    user: userInfo,
     login: loginHandler,
     logout: logoutHandler,
     authError,
     loading: checkingAuth,
     routeToLogin,
     register: registerHandler,
+    isLoggedIn: isLoggedInHandler,
   };
 }
 

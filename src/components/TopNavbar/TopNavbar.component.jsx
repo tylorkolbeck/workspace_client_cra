@@ -8,7 +8,8 @@ import clsx from "clsx";
 import useAuth from "../../common/hooks/useAuth";
 
 export default function Navbar() {
-  const { logout, routeToLogin } = useAuth();
+  const { logout, routeToLogin, isLoggedIn } = useAuth();
+
   function onLogoutHandler() {
     logout();
     routeToLogin();
@@ -39,9 +40,20 @@ export default function Navbar() {
           <div className="navbar-item">
             <div className="buttons">
               <div>
-                <button className="button is-danger" onClick={onLogoutHandler}>
-                  Logout
-                </button>
+                {isLoggedIn() && (
+                  <button
+                    className="button is-danger"
+                    onClick={onLogoutHandler}
+                  >
+                    Logout
+                  </button>
+                )}
+
+                {!isLoggedIn() && (
+                  <button className="button is-success" onClick={routeToLogin}>
+                    Login
+                  </button>
+                )}
               </div>
             </div>
           </div>
